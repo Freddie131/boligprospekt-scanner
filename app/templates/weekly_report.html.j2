@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="utf-8" />
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+    th, td { border: 1px solid #ccc; padding: 6px; font-size: 12px; }
+    h1, h2 { margin-bottom: .3rem; }
+    .meta { color:#555; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h1>BoligProspekt-Scanner – Ukesrapport</h1>
+  <p class="meta">Generert: {{ generated_at }} | Kilde-modus: {{ ingest_mode }}</p>
+  <h2>Top {{ top_prospects|length }}</h2>
+  {% for p in top_prospects %}
+    <h3>{{ loop.index }}. {{ p.title }} (Score {{ p.score }})</h3>
+    <p><a href="{{ p.url }}">{{ p.url }}</a></p>
+    <p>Pris: {{ p.price_nok or 'ukjent' }} | Region: {{ p.region or 'ukjent' }} | Kommune: {{ p.municipality or 'ukjent' }} | Avstand fra Grimstad: {{ p.metrics.distance_km or 'ukjent' }} km</p>
+    <p><b>Hvorfor høy score:</b> {{ p.metrics.why_high_score }}</p>
+    <p><b>Risiko-flagg:</b> {{ p.metrics.risk_flags|join(', ') if p.metrics.risk_flags else 'Ingen tydelige flagg' }}</p>
+    <table>
+      <tr><th>Scenario</th><th>Leie/mnd</th><th>Kost/mnd</th><th>Netto/mnd</th><th>Cap rate</th><th>Cash-on-cash</th><th>Payback år</th></tr>
+      {% for s in p.metrics.scenarios %}
+      <tr>
+        <td>{{ s.scenario }}</td><td>{{ s.estimated_rent_monthly }}</td><td>{{ s.monthly_costs }}</td><td>{{ s.net_cashflow_monthly }}</td><td>{{ s.cap_rate }}</td><td>{{ s.cash_on_cash }}</td><td>{{ s.renovation_payback_years or '-' }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  {% endfor %}
+
+  {% if bubble_prospects %}
+  <h2>Boblere</h2>
+  <ul>
+    {% for p in bubble_prospects %}
+      <li>{{ p.title }} ({{ p.score }})</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</body>
+</html>
